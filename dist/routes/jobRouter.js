@@ -13,7 +13,8 @@ const express = require('express');
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const multer = require("multer");
-const upload = multer({ dest: "storage/" });
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 router.post('/', upload.single('image'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -21,20 +22,23 @@ router.post('/', upload.single('image'), (req, res) => __awaiter(void 0, void 0,
             msg: "Wrong or no headers present"
         });
     }
+    if (!req.file) {
+        return res.status(400).send("No file uploaded");
+    }
     const token = authHeader.split(' ')[1];
     try {
         const decoded = jwt.verify(token, "yash123");
         console.log(decoded);
-        const { image } = req.file;
-        console.log(ImageData);
-        if (!image) {
-            return res.json({
-                msg: "No image or wrong image"
-            });
-        }
-        const base64Image = image.buffer.toString('base64');
+        const fileBuffer = req.file.buffer;
+        const base64Image = fileBuffer.toString('base64');
+        const jobData = {
+            token,
+            image: base64Image,
+            status: "Pending"
+        };
         return res.json({
-            base64: base64Image
+            msg: "File uploaded and converted to base64",
+            jobData
         });
     }
     catch (error) {
