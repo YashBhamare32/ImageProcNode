@@ -7,6 +7,8 @@ const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({storage : storage}); 
 
+let jobIdCounter =1;
+
 router.post('/' , upload.single('image') , async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
     if(!authHeader || !authHeader.startsWith("Bearer ")){
@@ -24,10 +26,11 @@ router.post('/' , upload.single('image') , async (req: Request, res: Response) =
         const decoded = jwt.verify(token , "yash123");
         console.log(decoded);
 
-        const fileBuffer = req.file.buffer;
+        const fileBuffer = req.file.buffer;//filebuffer has an image
         const base64Image = fileBuffer.toString('base64');
 
         const jobData = {
+            id: jobIdCounter++,
             token,
             image: base64Image,
             status: "Pending"
@@ -44,5 +47,16 @@ router.post('/' , upload.single('image') , async (req: Request, res: Response) =
         })
     }
 });
+
+router.get("/" , (req:Request , res:Response)=>{
+    res.json({
+        msg:"API is working"
+    })
+})
+
+router.get("/:id/status" , (req:Request , res:Response)=>{
+    const jobId = parseInt(req.params.id);
+    
+})
 
 module.exports = router;
