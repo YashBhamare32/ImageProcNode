@@ -78,9 +78,28 @@ router.get("/" , (req:Request , res:Response)=>{
     })
 })
 
-router.get("/:id/status" , async (req:Request , res:Response)=>{
+interface Blob {
+    id: number;
+    token: string;
+    base64Image: string;
+    status: string;
+  }
+
+router.get("/status/:id" , async (req:Request , res:Response)=>{
     const jobId = parseInt(req.params.id);
-    // const existingJob = await 
-})
+    const existingJob = await blob.findOne({id : jobId});
+    if(!existingJob){
+        console.log("No job found");
+        return res.json({
+            msg:"Job does not exist"
+        })
+    }
+
+    const status = existingJob.status;
+    return res.json({
+        jobId,
+        status
+    });
+});
 
 module.exports = router;

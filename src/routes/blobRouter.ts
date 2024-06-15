@@ -66,7 +66,7 @@ router.post(
 
 router.get("/:id", async (req: Request, res: Response) => {
   const blobId = parseInt(req.params.id);
-  const existingBlob = await blob.findOne((b: Blob) => b.id === blobId);
+  const existingBlob = await blob.findOne({id : blobId});
 
   if (!existingBlob) {
     return res.status(404).json({

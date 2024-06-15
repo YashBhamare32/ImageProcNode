@@ -16,6 +16,7 @@ const form_data_1 = __importDefault(require("form-data"));
 const axios = require("axios");
 const express = require('express');
 const jwt = require("jsonwebtoken");
+const { blob } = require("../db");
 const router = express.Router();
 const multer = require("multer");
 const storage = multer.memoryStorage();
@@ -75,7 +76,19 @@ router.get("/", (req, res) => {
         msg: "API is working"
     });
 });
-router.get("/:id/status", (req, res) => {
+router.get("/status/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const jobId = parseInt(req.params.id);
-});
+    const existingJob = yield blob.findOne({ id: jobId });
+    if (!existingJob) {
+        console.log("No job found");
+        return res.json({
+            msg: "Job does not exist"
+        });
+    }
+    const status = existingJob.status;
+    return res.json({
+        jobId,
+        status
+    });
+}));
 module.exports = router;
