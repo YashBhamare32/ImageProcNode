@@ -5,9 +5,9 @@ const {signup} = require("../db");
 
 router.post("/" ,async (req:Request , res:Response , next:NextFunction)=>{
     try {
-        const {username,password} = req.body;
-
+        const {username,password} = req.body;        
         const user = await signup.findOne({username});
+
         if(!user || user.password != password){
             return next(new Error("Wrong password or username"));
         }
