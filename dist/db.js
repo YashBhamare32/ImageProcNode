@@ -11,8 +11,15 @@ const signupSchema = new Schema({
     azp: Number,
     name: Array
 });
+const blobSchema = new Schema({
+    id: Number,
+    token: String,
+    base64Image: String,
+    status: String
+});
 const signup = mongoose.model("signup", signupSchema);
-// const login = mongoose.model("login" , signupSchema);
+const blob = mongoose.model("blob", blobSchema);
 module.exports = {
-    signup
+    signup,
+    blob
 };

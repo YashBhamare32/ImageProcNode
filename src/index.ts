@@ -5,7 +5,7 @@ const mainRouter = require('./routes/routes');
 const app: Application = express();
 
 app.use(express.json());
-app.use(bodyParser.json())
+app.use(bodyParser.json({limit:'1000mb'}))
 app.use('/api/v1', mainRouter);
 
 app.listen(3000, () => {

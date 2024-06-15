@@ -1,13 +1,16 @@
 import { Router, Request, Response } from 'express';
+import FormData from "form-data"
+const axios = require("axios");
 const express = require('express');
 const jwt = require("jsonwebtoken");
+const {blob}  = require("../db")
 const router: Router = express.Router();
 
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({storage : storage}); 
 
-let jobIdCounter =1;
+let jobIdCounter = 1;
 
 router.post('/' , upload.single('image') , async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
@@ -26,23 +29,44 @@ router.post('/' , upload.single('image') , async (req: Request, res: Response) =
         const decoded = jwt.verify(token , "yash123");
         console.log(decoded);
 
-        const fileBuffer = req.file.buffer;//filebuffer has an image
-        const base64Image = fileBuffer.toString('base64');
+        const fileBuffer = req.file.buffer;//filebuffer has the image
 
-        const jobData = {
-            id: jobIdCounter++,
-            token,
-            image: base64Image,
-            status: "Pending"
-        };
+        const formData = new FormData();
+        formData.append('image', fileBuffer, {
+            filename: 'image.jpg',
+            contentType: 'image/jpeg'
+        });
+        formData.append('token', token);
 
-        return res.json({
-            msg:"File uploaded and converted to base64",
-            jobData
-        })
+        try {
+            const response = await axios.post("http://localhost:3000/api/v1/blob", formData, {
+                headers: {
+                    ...formData.getHeaders(),
+                    Authorization: authHeader // Preserve original authorization header
+                }
+            });
+
+            console.log(response);
+
+            if (response.status !== 200) {
+                return res.status(response.status).json({ msg: 'Blob API returned an error', error: response.data });
+            }
+
+            return res.json({
+                msg:"File uploaded and converted to base64",
+                jobData : response.data.newBlob
+            })
+
+        } catch (error) {
+            return res.json({
+                msg:"Error from blob api",
+                error
+            })
+        } 
 
     } catch (error) {
         return res.status(403).json({
+            msg:"Error handled in job api",
             Error:error
         })
     }
@@ -54,9 +78,9 @@ router.get("/" , (req:Request , res:Response)=>{
     })
 })
 
-router.get("/:id/status" , (req:Request , res:Response)=>{
+router.get("/:id/status" , async (req:Request , res:Response)=>{
     const jobId = parseInt(req.params.id);
-    
+    // const existingJob = await 
 })
 
 module.exports = router;
